@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Suite - Callbacks and timers</title>
+    <script type="text/javascript" src="../libs/jquery.min.js"></script>
+    <script type="text/javascript">
+        function assert(value, desc) {
+            var li = document.createElement("li");
+            li.className = value ? "pass" : "fail";
+            li.appendChild(document.createTextNode(desc));
+            document.getElementById("results").appendChild(li);
+        }
+    </script>
+    <style>
+        #results li.pass {
+            color: green
+        }
+        
+        #results li.fail {
+            color: red
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="results">
+    </ul>
+
+    <div id="testSubject"></div>
+    <button type="button" id="testButton">Go!</button>
+
+    <script type="text/javascript">
+        $("#testButton").click(function() {
+            var elem$ = $("#testSubject");
+            elem$.html("Loading...");
+
+            $.ajax({
+                // cors problem
+                url: "../example.html",
+                success: function() {
+                    assert(elem$, "We can se elem$, via the closure for this callback")
+                    elem$.html(html);
+                }
+            })
+
+        });
+    </script>
+
+</body>
+
+</html>

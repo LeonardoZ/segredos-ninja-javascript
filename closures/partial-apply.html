@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Suite - Patial Apply</title>
+    <script type="text/javascript">
+        function assert(value, desc) {
+            var li = document.createElement("li");
+            li.className = value ? "pass" : "fail";
+            li.appendChild(document.createTextNode(desc));
+            document.getElementById("results").appendChild(li);
+        }
+    </script>
+    <style>
+        #results li.pass {
+            color: green
+        }
+        
+        #results li.fail {
+            color: red
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="results">
+    </ul>
+
+    <script type="text/javascript">
+        Function.prototype.curry = function() {
+            // keep upper level fn reference
+            var fn = this
+                // keep upper level fb arguments
+                // give it Array capabilities
+            args = Array.prototype.slice.call(arguments);
+            return function() {
+                // apply(context, [args-array])
+                return fn.apply(this, args.concat(Array.prototype.slice.call(arguments)))
+            }
+        }
+
+        function sum(a, b) {
+            return a + b;
+        }
+
+        var f = sum.curry(20)
+        assert(f(10) === 30, "Sum of curried fn is 30")
+
+        Function.prototype.partial = function() {
+            var fn = this,
+                args = Array.prototype.slice.call(arguments);
+            return function() {
+                var arg = 0;
+                for (var i = 0; i < args.length && arg < arguments.length; i++) {
+                    if (args[i] === undefined) {
+                        args[i] = arguments[arg++];
+                    }
+                }
+                return fn.apply(this, args);
+            }
+        }
+
+        var delay = setTimeout.partial(undefined, 10);
+        delay(function() {
+            assert(true, "A call to this fun will be delayed 10 ms.");
+        })
+
+        Function.prototype.memoized = function(key) {
+            this._values = this._values || {};
+            var value = this._values[key] !== undefined ?
+                this._values[key] :
+                this._values[key] = this.apply(this, arguments);
+            console.log(this._values)
+            return value;
+        }
+
+        Function.prototype.memoize = function() {
+            var fn = this;
+            return function() {
+                return fn.memoized.apply(fn, arguments)
+            }
+        }
+
+        var factorial = (function(n) {
+            if (n == 0) return 1;
+            return n == 1 ?
+                n :
+                n * factorial(n - 1);
+        }).memoize();
+        assert(factorial(8) === 40320, "!8 = 40320");
+        assert(factorial(5) === 120, "!5 = 120");
+        assert(factorial(4) === 24, "!4 = 24");
+        assert(factorial(3) === 6, "!3 = 6");
+        assert(factorial(2) === 2, "!2 = 2");
+        factorial(55);
+        factorial(66);
+    </script>
+
+</body>
+
+</html>

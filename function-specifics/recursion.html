@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Suite - Recursion</title>
+    <script type="text/javascript">
+        function assert(value, desc) {
+            var li = document.createElement("li");
+            li.className = value ? "pass" : "fail";
+            li.appendChild(document.createTextNode(desc));
+            document.getElementById("results").appendChild(li);
+        }
+    </script>
+    <style>
+        #results li.pass {
+            color: green
+        }
+        
+        #results li.fail {
+            color: red
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="results">
+    </ul>
+    <script type="text/javascript">
+        function isPalindrome(text) {
+            if (text.length <= 1) return true;
+            if (text.charAt(0) != text.charAt(text.length - 1)) return false;
+            return isPalindrome(text.substr(1, text.length - 2));
+        }
+    </script>
+    <script type="text/javascript">
+        // named function recursion
+        function chirp(n) {
+            return n > 1 ? chirp(n - 1) + "-chirp" : "chirp";
+        }
+        assert(chirp(3) === "chirp-chirp-chirp", "Calling the named function comes naturally.");
+
+        // method recursion
+        // var ninja = {
+        //     chirp: function(n) {
+        //         return n > 1 ? ninja.chirp(n - 1) + "-chirp" : "chirp";
+        //     }
+        // };
+
+        // this fix external reference to object
+        // var ninja = {
+        //     chirp: function(n) {
+        //         return n > 1 ? this.chirp(n - 1) + "-chirp" : "chirp";
+        //     }
+        // };
+
+        // named embedded functions
+        var ninja = {
+            chirp: function signal(n) {
+                return n > 1 ? signal(n - 1) + "-chirp" : "chirp";
+            }
+        };
+
+        assert(ninja.chirp(3) === "chirp-chirp-chirp", "An object property isn't too confusing either.");
+        // stolen reference
+        var samurai = {
+            chirp: ninja.chirp
+        };
+        ninja = {}
+
+        try {
+            assert(samurai.chirp(3) === "chirp-chirp-chirp", "Is this going to work")
+        } catch (error) {
+            // if we user ninja.chirp in the call and/or declarations
+            assert(false, "Uh, this isn't good! Where'd ninja.cirp go?")
+        }
+
+        // confirming identity of a function
+        var ninja = function myNinja(params) {
+            assert(ninja == myNinja, "This function is named two things at once!")
+        };
+        ninja();
+        assert(typeof myNinja == "undefined", "Bit ninja isn't defined outside of the function");
+    </script>
+
+</body>
+
+</html>

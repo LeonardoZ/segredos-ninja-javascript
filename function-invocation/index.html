@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Suite - Function Invocation</title>
+    <script type="text/javascript">
+        function assert(value, desc) {
+            var li = document.createElement("li");
+            li.className = value ? "pass" : "fail";
+            li.appendChild(document.createTextNode(desc));
+            document.getElementById("results").appendChild(li);
+        }
+    </script>
+    <style>
+        #results li.pass {
+            color: green
+        }
+        
+        #results li.fail {
+            color: red
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="results">
+    </ul>
+
+    <script type="text/javascript">
+        // This refers to the scope where the function is invocated
+        function creep() {
+            return this;
+        }
+
+        // global, window scope
+        assert(creep() === window, "Creeping in the window");
+
+        var sneak = creep;
+
+        // still global
+        assert(sneak() === window, "Sneaking in the window");
+
+        var ninja1 = {
+            skulk: creep
+        }
+
+        // ninja1 scope
+        assert(ninja1.skulk() === ninja1, "The 1st ninja is skulking");
+
+        var ninja2 = {
+            skulk: creep
+        }
+
+        // ninja2 scope
+        assert(ninja2.skulk() === ninja2, "The 2nd ninja is skulking")
+    </script>
+
+    <script type="text/javascript">
+        // new passes a {} as this of the function.
+        // easier to crate objects
+        function Ninja() {
+            this.skulk = function() {
+                return this;
+            };
+        }
+
+        var ninja3 = new Ninja();
+        var ninja4 = new Ninja();
+
+        // ninja3 scope
+        assert(ninja3.skulk() === ninja3, "The 3rd ninja is skulking");
+
+        // ninja4 scope - new creates a new scope
+        assert(ninja4.skulk() === ninja4, "The 4th ninja is skulking")
+    </script>
+
+    <script type="text/javascript">
+        // apply() and call() specifies scope, arguments in a list ou directly
+        function juggle() {
+            var result = 0;
+            for (var n = 0; n < arguments.length; n++) {
+                result += arguments[n];
+            }
+            this.result = result;
+        }
+
+        var ninja1 = {};
+        var ninja2 = {};
+
+        juggle.apply(ninja1, [1, 2, 3, 4]);
+        juggle.call(ninja2, 5, 6, 7, 8);
+
+        assert(ninja1.result === 10, "juggled via apply");
+        assert(ninja2.result === 26, "juggled via call");
+    </script>
+
+    <script type="text/javascript">
+        function forEach(list, callback) {
+            for (var n = 0; n < list.length; n++) {
+                callback.call(list[n], n);
+            }
+        }
+
+        var weapons = ["shuriken", "katana", "nunchucks"];
+
+        forEach(weapons,
+            function(index) {
+                assert(this == weapons[index], "Got the expected value of " + weapons[index])
+            });
+    </script>
+
+
+</body>
+
+</html>

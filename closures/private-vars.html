@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Suite - Private vars</title>
+    <script type="text/javascript">
+        function assert(value, desc) {
+            var li = document.createElement("li");
+            li.className = value ? "pass" : "fail";
+            li.appendChild(document.createTextNode(desc));
+            document.getElementById("results").appendChild(li);
+        }
+    </script>
+    <style>
+        #results li.pass {
+            color: green
+        }
+        
+        #results li.fail {
+            color: red
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="results">
+    </ul>
+
+    <script type="text/javascript">
+        function Ninja() {
+            var feints = 0;
+
+            this.getFeints = function() {
+                return feints;
+            }
+
+            this.feint = function() {
+                feints++;
+            }
+        }
+
+        var ninja = new Ninja();
+
+        ninja.feint();
+        assert(ninja.getFeints() == 1, "We're able to access the internal feint counter");
+        assert(ninja.feints == undefined, "Private data is inaccessible to us");
+    </script>
+
+</body>
+
+</html>

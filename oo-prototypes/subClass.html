@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Suite - OO Prototype Subclass</title>
+    <script type="text/javascript">
+        function assert(value, desc) {
+            var li = document.createElement("li");
+            li.className = value ? "pass" : "fail";
+            li.appendChild(document.createTextNode(desc));
+            document.getElementById("results").appendChild(li);
+        }
+    </script>
+    <style>
+        #results li.pass {
+            color: green
+        }
+        
+        #results li.fail {
+            color: red
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="results">
+    </ul>
+    <script type="text/javascript">
+        (function() {
+            var initializing = false,
+                fnTest = /xyz/.test(function() {
+                    xyz;
+                }) ? /\b_super\b/ : /.*/;
+
+            // The base Class implementation (does nothing)
+            this.Class = function() {};
+
+            // Create a new Class that inherits from this class
+            Class.extend = function(prop) {
+                var _super = this.prototype;
+
+                // Instantiate a base class (but only create the instance,
+                // don't run the init constructor)
+                initializing = true;
+                var prototype = new this();
+                initializing = false;
+
+                // Copy the properties over onto the new prototype
+                for (var name in prop) {
+                    // Check if we're overwriting an existing function
+                    prototype[name] = typeof prop[name] == "function" &&
+                        typeof _super[name] == "function" && fnTest.test(prop[name]) ?
+                        (function(name, fn) {
+                            return function() {
+                                var tmp = this._super;
+
+                                // Add a new ._super() method that is the same method
+                                // but on the super-class
+                                this._super = _super[name];
+
+                                // The method only need to be bound temporarily, so we
+                                // remove it when we're done executing
+                                var ret = fn.apply(this, arguments);
+                                this._super = tmp;
+
+                                return ret;
+                            };
+                        })(name, prop[name]) :
+                        prop[name];
+                }
+
+                // The dummy class constructor
+                function Class() {
+                    // All construction is actually done in the init method
+                    if (!initializing && this.init)
+                        this.init.apply(this, arguments);
+                }
+
+                // Populate our constructed prototype object
+                Class.prototype = prototype;
+
+                // Enforce the constructor to be what we expect
+                Class.prototype.constructor = Class;
+
+                // And make this class extendable
+                Class.extend = arguments.callee;
+
+                return Class;
+            };
+        })();
+
+
+        var Person = Class.extend({
+            init: function(isDancing) {
+                this.dancing = isDancing;
+            },
+            dance: function() {
+                return this.dancing
+            }
+        });
+
+
+        var Ninja = Person.extend({
+            init: function() {
+                this._super(false);
+            },
+            dance: function() {
+                return this._super()
+            },
+            swingSword: function() {
+                return true;
+            }
+        });
+        console.log(Ninja)
+        var person = new Person(true);
+        var ninja = new Ninja();
+        assert(person.dance(), "The person is Dancing");
+        assert(ninja.swingSword(), "The sword is swinging");
+        assert(!ninja.dance(), "The ninja is not dancing");
+        assert(person instanceof Person, "Person is a person");
+        assert(ninja instanceof Ninja && ninja instanceof Person, "Ninja is a ninja and a person");
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Suite - Args manipulation</title>
+    <script type="text/javascript">
+        function assert(value, desc) {
+            var li = document.createElement("li");
+            li.className = value ? "pass" : "fail";
+            li.appendChild(document.createTextNode(desc));
+            document.getElementById("results").appendChild(li);
+        }
+    </script>
+    <style>
+        #results li.pass {
+            color: green
+        }
+        
+        #results li.fail {
+            color: red
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="results">
+    </ul>
+    <script type="text/javascript">
+        // using apply() to provide parameters
+        function smallest(array) {
+            return Math.min.apply(Math, array);
+        }
+
+        function largest(array) {
+            return Math.max.apply(Math, array);
+        }
+
+        assert(smallest([0, 1, 2, 3]) == 0, "Located the smallest value");
+        assert(largest([0, 1, 2, 3]) == 3, "Located the largest value");
+
+        // function overload
+        function merge(root) {
+            // ignores first argument - root - already been referenced
+            for (var i = 1; i < arguments.length; i++) {
+                for (var key in arguments[i]) {
+                    root[key] = arguments[i][key];
+                }
+            }
+            return root;
+        }
+
+        var merged = merge({
+            name: "Batou"
+        }, {
+            city: "Niihama"
+        });
+
+        assert(merged.name == "Batou", "The original name is intact.");
+        assert(merged.city == "Niihama", "The original city has been coped.");
+
+        // decompose arguments list - arguments isn't an array
+        function multiMax(multi) {
+            // return multi * Math.max.apply(Math, arguments.slice(1));
+            return multi * Math.max.apply(Math, Array.prototype.slice.call(arguments, 1));
+        }
+
+        assert(multiMax(3, 1, 2, 3) == 9, "3*3=9 (First arg, by largest)");
+
+        // Fn length - overload
+        var ninja = {};
+        addMethod(ninja, "whatever", function() {});
+        addMethod(ninja, "whatever", function(a) {
+            return a
+        });
+        addMethod(ninja, "whatever", function(a, b) {
+            return a + b
+        });
+
+        // links functions by reference.
+        function addMethod(object, name, fn) {
+            // get the existing fn, if it exists
+            var old = object[name];
+
+            // reassign with a new fn
+            object[name] = function() {
+                // anonymous fn params length match
+                if (fn.length == arguments.length) {
+                    return fn.apply(this, arguments);
+                } else if (typeof old == "function") {
+                    // param count doens't match, get the previous fn and try again
+                    return old.apply(this, arguments);
+                }
+            }
+        }
+
+        var ninjas = {
+            values: ["Dean edwards", "Sam stephenson", "Alex russel"]
+        };
+
+        addMethod(ninjas, "find", function() {
+            return this.values;
+        });
+
+        addMethod(ninjas, "find", function(name) {
+            var ret = [];
+            for (var i = 0; i < this.values.length; i++) {
+                if (this.values[i].indexOf(name) == 0) {
+                    ret.push(this.values[i]);
+                }
+            }
+
+            return ret;
+        });
+
+        addMethod(ninjas, "find", function(first, last) {
+            var ret = [];
+            for (var i = 0; i < this.values.length; i++) {
+                if (this.values[i] == (first + " " + last)) {
+                    ret.push(this.values[i]);
+                }
+            }
+            return ret;
+        });
+
+        assert(ninjas.find().length == 3, "Found all ninjas");
+        assert(ninjas.find("Sam").length == 1, "Found by first name");
+        assert(ninjas.find("Dean", "edwards").length == 1, "Found by first and last name");
+        assert(ninjas.find("Alex", "russel", "Jr") == null, "Found nothing");
+    </script>
+</body>
+
+</html>
